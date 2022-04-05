@@ -116,6 +116,8 @@ function App() {
           <BackTop visibilityHeight={50} />
           <Input value={search} onChange={e => {e.preventDefault(); setSearch(e.target.value);}} placeholder={"Enter address to check if it is locked"} />
           <Table
+              sticky
+              scroll={{ x: 'max-content' }}
               pagination={{
                   position: ["bottomCenter"],
                   defaultPageSize: state.sizes[0],
