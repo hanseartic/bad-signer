@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import loopcall from '@cosmic-plus/loopcall'
 import {useEffect, useState, useMemo} from "react";
 import {Server} from "stellar-sdk";
-import {Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
+import {BackTop, Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
 import {GithubOutlined, TwitterOutlined} from "@ant-design/icons";
 
@@ -106,6 +106,7 @@ function App() {
           ]} />
 
       <Content className={"App-content"}>
+          <BackTop visibilityHeight={50} />
           <Table
               pagination={{
                   position: ["bottomCenter"],
