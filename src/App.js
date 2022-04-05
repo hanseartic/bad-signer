@@ -1,7 +1,7 @@
 import './App.css';
 import 'antd/dist/antd.css';
 import loopcall from '@cosmic-plus/loopcall'
-import {useEffect, useState} from "react";
+import {useEffect, useState, useMemo} from "react";
 import {Server} from "stellar-sdk";
 import {Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
@@ -61,11 +61,18 @@ const LockInfo = ({id}) => {
 }
 
 function App() {
+  const sizes = useMemo(() => [25, 50, 100, 200, 500, 1000], []);
   const accounts = useLockedAccounts();
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState({loading: true, count: 0, sizes: sizes.slice(0, 1)});
   useEffect(() => {
-      setLoading(accounts.length === 0);
-  }, [accounts]);
+      setState(prev => ({
+          loading: accounts.length === 0,
+          count: accounts.length,
+          sizes: accounts.length === 0
+              ? prev.sizes
+              : sizes.filter(e => e < accounts.length).concat(accounts.length)
+      }));
+  }, [accounts, sizes]);
 
   const columns = [
       {
@@ -87,22 +94,33 @@ function App() {
   ];
 
   const tableFooter = () => {
-      return <Statistic title={"Accounts locked by " + badSigner} value={accounts.length} loading={loading} />
+      return <Statistic title={"Accounts locked by " + badSigner} value={state.count} loading={state.loading} />
   }
   return (<Layout className={"App"}>
       <PageHeader
+          key={"head"}
           title="Overview of stolen/locked accounts"
           tags={[
-              <Tag color="processing" icon={<TwitterOutlined />}><a href="https://twitter.com/vinamo_/status/1511027634448343047"  target="_blank" rel="noreferrer">Follow convo on twitter</a></Tag>,
-              <Tag icon={<GithubOutlined />}><a href="https://github.com/hanseartic/bad-signer" target="_blank" rel="noreferrer">Improve this on github</a></Tag>,
+              <Tag key={"ph:tweet"} color="processing" icon={<TwitterOutlined />}><a href="https://twitter.com/vinamo_/status/1511027634448343047"  target="_blank" rel="noreferrer">Follow the convo on twitter</a></Tag>,
+              <Tag key={"ph:gh"} icon={<GithubOutlined />}><a href="https://github.com/hanseartic/bad-signer" target="_blank" rel="noreferrer">Help to improve this on github</a></Tag>,
           ]} />
 
       <Content className={"App-content"}>
           <Table
-              pagination={{ position: ["bottomCenter"], defaultPageSize: 15, pageSizeOptions: [15, 50, 100, accounts.length], simple: false, total: accounts.length, size: "small"}}
+              pagination={{
+                  position: ["bottomCenter"],
+                  defaultPageSize: state.sizes[0],
+                  pageSizeOptions: state.sizes,
+                  total: state.count,
+                  showTitle: false,
+                  size: "small",
+                  showLessItems: true,
+                  showPrevNextJumpers: true,
+                  showQuickJumper: true,
+              }}
               footer={tableFooter}
               columns={columns}
-              loading={loading}
+              loading={state.loading}
               dataSource={accounts.map(a => ({...a, key:a.id}))}
           />
       </Content>
