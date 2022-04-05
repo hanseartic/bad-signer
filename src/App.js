@@ -7,7 +7,7 @@ import {Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
 import {GithubOutlined, TwitterOutlined} from "@ant-design/icons";
 
-const server = new Server('https://horizon.stellar.org');
+const server = new Server('https://horizon.stellar.lobstr.co');
 const badSigner = 'GCTXWXCZ2GKRACYXROMCBF6DBLH65TTIN7W3JCHRVGZOHBUBTFOJKH7O';
 //const vaultFlagSigner = 'GCTXWXCZ2GKRACYXROMCBF6DBLH65TTIN7W3JCHRVGZOHBUBTFOJKH7O';
 
