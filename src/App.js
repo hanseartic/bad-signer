@@ -23,6 +23,7 @@ const useLockedAccounts = () => {
         .then(accounts => accounts.sort((a, b) => {
             return new Date(b.last_modified_time) - new Date(a.last_modified_time)
         }))
+        .then(accounts => accounts.map(a => ({id: a.id, last_modified_time: a.last_modified_time})))
         .then(setAccounts)
   }, []);
   return accounts;
@@ -45,7 +46,7 @@ const useAccountLockedInfo = (id) => {
             takeover: ops[0].created_at,
             opsAfterTakeover: ops.length-1,
             opTypes: ops.map(o => o.type),
-            ops: ops,
+            //ops: ops,
         }))
             .then(setLockInfo)
         // eslint-disable-next-line
