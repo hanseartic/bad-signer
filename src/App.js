@@ -3,8 +3,9 @@ import 'antd/dist/antd.css';
 import loopcall from '@cosmic-plus/loopcall'
 import {useEffect, useState} from "react";
 import {Server} from "stellar-sdk";
-import {Layout, Skeleton, Statistic, Table} from "antd";
+import {Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
+import {GithubOutlined, TwitterOutlined} from "@ant-design/icons";
 
 const server = new Server('https://horizon.stellar.org');
 const badSigner = 'GCTXWXCZ2GKRACYXROMCBF6DBLH65TTIN7W3JCHRVGZOHBUBTFOJKH7O';
@@ -13,7 +14,7 @@ const badSigner = 'GCTXWXCZ2GKRACYXROMCBF6DBLH65TTIN7W3JCHRVGZOHBUBTFOJKH7O';
 const useLockedAccounts = () => {
   const [accounts, setAccounts] = useState([]);
   useEffect(() => {
-    const callBuilder = server.accounts().forSigner(badSigner);
+    const callBuilder = server.accounts().forSigner(badSigner).limit(200);
     loopcall(
         callBuilder,
         {
@@ -37,7 +38,7 @@ const Account = ({id}) => {
 const useAccountLockedInfo = (id) => {
     const [lockInfo, setLockInfo] = useState();
     useEffect(() => {
-        loopcall(server.operations().order("desc").forAccount(id), {
+        loopcall(server.operations().order("desc").forAccount(id).limit(200), {
             breaker: record => record.type === 'set_options' && record.high_threshold === 20,
             filter: record => record.source_account === id,
         }).then(ops => ({
@@ -47,7 +48,8 @@ const useAccountLockedInfo = (id) => {
             ops: ops,
         }))
             .then(setLockInfo)
-    }, [id]);
+        // eslint-disable-next-line
+    }, []);
     return lockInfo;
 }
 
@@ -61,8 +63,9 @@ function App() {
   const accounts = useLockedAccounts();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-      setLoading(accounts.length === 0)
+      setLoading(accounts.length === 0);
   }, [accounts]);
+
   const columns = [
       {
           title: 'account',
@@ -82,21 +85,27 @@ function App() {
       }
   ];
 
-  const tableTitle = () => {
+  const tableFooter = () => {
       return <Statistic title={"Accounts locked by " + badSigner} value={accounts.length} loading={loading} />
   }
-  return (
-      <Layout className={"App"}>
-        <Content className={"App-content"}>
-        <Table
-            title={tableTitle}
-            columns={columns}
-            loading={loading}
-            dataSource={accounts.map(a => ({...a, key:a.id}))}
-        />
-        </Content>
-      </Layout>
-  );
+  return (<Layout className={"App"}>
+      <PageHeader
+          title="Overview of stolen/locked accounts"
+          tags={[
+              <Tag color="processing" icon={<TwitterOutlined />}><a href="https://twitter.com/vinamo_/status/1511027634448343047"  target="_blank" rel="noreferrer">Follow convo on twitter</a></Tag>,
+              <Tag icon={<GithubOutlined />}><a href="https://github.com/hanseartic/bad-signer" target="_blank" rel="noreferrer">Improve this on github</a></Tag>,
+          ]} />
+
+      <Content className={"App-content"}>
+          <Table
+              pagination={{ position: ["bottomCenter"], defaultPageSize: 15, pageSizeOptions: [15, 50, 100, accounts.length], simple: false, total: accounts.length, size: "small"}}
+              footer={tableFooter}
+              columns={columns}
+              loading={loading}
+              dataSource={accounts.map(a => ({...a, key:a.id}))}
+          />
+      </Content>
+      </Layout>);
 }
 
 export default App;
