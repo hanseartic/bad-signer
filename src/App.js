@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import loopcall from '@cosmic-plus/loopcall'
 import {useEffect, useState} from "react";
 import {Server} from "stellar-sdk";
-import {Layout, Skeleton, Table} from "antd";
+import {Layout, Skeleton, Statistic, Table} from "antd";
 import {Content} from "antd/lib/layout/layout";
 
 const server = new Server('https://horizon.stellar.org');
@@ -82,11 +82,14 @@ function App() {
       }
   ];
 
+  const tableTitle = () => {
+      return <Statistic title={"Accounts locked by " + badSigner} value={accounts.length} loading={loading} />
+  }
   return (
       <Layout className={"App"}>
         <Content className={"App-content"}>
         <Table
-            title={(a) => "Accounts locked by " + badSigner }
+            title={tableTitle}
             columns={columns}
             loading={loading}
             dataSource={accounts.map(a => ({...a, key:a.id}))}
