@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import loopcall from '@cosmic-plus/loopcall'
 import {useEffect, useState, useMemo} from "react";
 import {Server} from "stellar-sdk";
-import {BackTop, Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
+import {BackTop, Input, Layout, PageHeader, Skeleton, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
 import {GithubOutlined, TwitterOutlined} from "@ant-design/icons";
 
@@ -64,6 +64,11 @@ function App() {
   const sizes = useMemo(() => [25, 50, 100, 200, 500, 1000], []);
   const accounts = useLockedAccounts();
   const [state, setState] = useState({loading: true, count: 0, sizes: sizes.slice(0, 1)});
+  const [search, setSearch] = useState(undefined);
+  const [filter, setFilter] = useState([]);
+  useEffect(() => {
+      setFilter([search])
+  }, [search]);
   useEffect(() => {
       setState(prev => ({
           loading: accounts.length === 0,
@@ -80,6 +85,8 @@ function App() {
           dataIndex: 'id',
           render: id => <Account id={id} />,
           sorter: (a, b) => a.id.localeCompare(b.id),
+          onFilter: (s, r) => r.id.toLowerCase().includes(s.toLowerCase()),
+          filteredValue: (search && filter) || [],
       },
       {
           title: 'locked at',
@@ -107,6 +114,7 @@ function App() {
 
       <Content className={"App-content"}>
           <BackTop visibilityHeight={50} />
+          <Input value={search} onChange={e => {e.preventDefault(); setSearch(e.target.value);}} placeholder={"Enter address to check if it is locked"} />
           <Table
               pagination={{
                   position: ["bottomCenter"],
