@@ -4,7 +4,7 @@ import 'antd/dist/antd.css';
 import {useEffect, useState, useMemo} from "react";
 import {BackTop, Input, Layout, PageHeader, Statistic, Table, Tag} from "antd";
 import {Content} from "antd/lib/layout/layout";
-import {GithubOutlined, TwitterOutlined} from "@ant-design/icons";
+import {DownloadOutlined, GithubOutlined, TwitterOutlined} from "@ant-design/icons";
 import {badSigner} from "./common"
 import https from 'https';
 
@@ -106,6 +106,7 @@ function App() {
           tags={[
               <Tag key={"ph:tweet"} color="processing" icon={<TwitterOutlined />}><a href="https://twitter.com/vinamo_/status/1511027634448343047"  target="_blank" rel="noreferrer">Follow the convo on twitter</a></Tag>,
               <Tag key={"ph:gh"} icon={<GithubOutlined />}><a href="https://github.com/hanseartic/bad-signer" target="_blank" rel="noreferrer">Help to improve this on github</a></Tag>,
+              <Tag key={"ph:download"} color="success" icon={<DownloadOutlined />}><a href="/bad-signer/accounts.json" target="_blank" rel="noreferrer">Download dataset (.json)</a></Tag>,
           ]} />
 
         <Content className={"App-content"}>
