@@ -1,6 +1,6 @@
 import {getLockedAccounts, LockedAccount} from "./src/useLockedAccounts";
 import {AccountLockedInfo, getAccountLockedInfo} from "./src/useAccountLockedInfo";
-import {writeFileSync as writeFile, readFileSync} from 'fs';
+import {writeFileSync as writeFile, readFileSync, existsSync as fileExists} from 'fs';
 import {config} from 'dotenv';
 
 const accountFile = config().parsed?.WRITE_ACCOUNTS_CACHE;
@@ -16,12 +16,16 @@ const getAccountsDataFromJson = (json: string): AllInfo[] => {
     }
 }
 
-const clearFile = (): true => {
+const checkAccountsFile = (): boolean => {
     if (accountFile === undefined) {
         throw accountFileNotFound;
     }
+    if (fileExists(accountFile)) {
+        console.warn('accounts file already exists - skipping');
+        return false;
+    }
     writeFile(accountFile, '');
-    return true
+    return true;
 }
 
 const appendFile = (data: AllInfo): AllInfo|undefined => {
@@ -36,11 +40,11 @@ const appendFile = (data: AllInfo): AllInfo|undefined => {
 }
 
 const build = () => {
-    getLockedAccounts(3)
-        .then(lockedAccounts => clearFile() && lockedAccounts.map(acc =>
+    checkAccountsFile() && getLockedAccounts()
+        .then(lockedAccounts => lockedAccounts.map(acc =>
             getAccountLockedInfo(acc.id)
                 .then(info => appendFile({...acc, ...info}))
-                .then(console.log)
+                .then(allInfo => console.log(allInfo?.id))
                 .catch(console.warn)
         ))
         .catch(console.warn)

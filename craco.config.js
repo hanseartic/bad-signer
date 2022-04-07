@@ -7,6 +7,7 @@ module.exports = {
         configure: {
             resolve: {
                 fallback: {
+                    "https": "https-browserify"
                 }
             },
             plugins: [
@@ -27,7 +28,7 @@ module.exports = {
                         "os",
                         "path",
                         "punycode",
-                        "process",
+                        //"process",
                         "querystring",
                         "stream",
                         "_stream_duplex",
