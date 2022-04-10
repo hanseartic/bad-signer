@@ -36,13 +36,16 @@ const Account = ({id}) => {
 
 function App() {
     const [accounts, setAccounts] = useState(undefined);
-    const [state, setState] = useState({loading: true, count: 0, sizes: [25]});
+    const [state, setState] = useState({loading: true, count: 0, sizes: [25], updated: new Date()});
     const [search, setSearch] = useState(undefined);
     const [filter, setFilter] = useState([]);
 
     useEffect(() => {
       getAccountsInfo('/bad-signer/accounts.json')
-          .then(setAccounts)
+          .then(info => {
+              setAccounts(info.accounts);
+              setState(p => ({...p, updated: info.lastUpdated}));
+          })
           .catch(() => {
               setState(p => ({...p, loading: false}))
           })
@@ -96,7 +99,7 @@ function App() {
     ];
 
     const tableFooter = () => {
-      return <Statistic title={"Accounts locked by " + badSigner} value={state.count} loading={state.loading} />
+        return <Statistic title={<>Accounts locked by <b>{badSigner}</b> (last updated {state.updated.toLocaleString()})</>} value={state.count} loading={state.loading} />
     }
 
     return (<Layout className={"App"}>

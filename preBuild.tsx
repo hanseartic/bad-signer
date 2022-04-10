@@ -7,12 +7,18 @@ const accountFile = config().parsed?.WRITE_ACCOUNTS_CACHE;
 const accountFileNotFound = "json file not defined"
 
 type AllInfo = LockedAccount & AccountLockedInfo;
-
-const getAccountsDataFromJson = (json: string): AllInfo[] => {
+interface AccountsInfo {
+    accounts: AllInfo[];
+    lastUpdated: Date;
+}
+const getAccountsDataFromJson = (json: string): AccountsInfo => {
     try {
-        return [].concat(JSON.parse(json));
+        return JSON.parse(json) as AccountsInfo;
     } catch {
-        return [];
+        return {
+            accounts: [],
+            lastUpdated: new Date(Date.now()),
+        };
     }
 }
 
@@ -34,7 +40,8 @@ const appendFile = (data: AllInfo): AllInfo|undefined => {
     }
     const existingData = getAccountsDataFromJson(readFileSync(accountFile, {encoding: 'utf8'}));
     if (typeof existingData === 'object') {
-        writeFile(accountFile, JSON.stringify(existingData.concat(data)));
+        existingData.accounts = existingData.accounts.concat(data)
+        writeFile(accountFile, JSON.stringify(existingData));
         return data;
     }
 }
