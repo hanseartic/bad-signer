@@ -1,19 +1,15 @@
-import {getLockedAccounts, LockedAccount} from "./src/useLockedAccounts";
-import {AccountLockedInfo, getAccountLockedInfo} from "./src/useAccountLockedInfo";
+import {getLockedAccounts} from "./src/useLockedAccounts";
+import {getAccountLockedInfo} from "./src/useAccountLockedInfo";
 import {writeFileSync as writeFile, readFileSync, existsSync as fileExists} from 'fs';
 import {config} from 'dotenv';
+import {AccountInfo, AccountsLockedData} from './typings/accountsLockedData';
 
 const accountFile = config().parsed?.WRITE_ACCOUNTS_CACHE;
 const accountFileNotFound = "json file not defined"
 
-type AllInfo = LockedAccount & AccountLockedInfo;
-interface AccountsInfo {
-    accounts: AllInfo[];
-    lastUpdated: Date;
-}
-const getAccountsDataFromJson = (json: string): AccountsInfo => {
+const getAccountsDataFromJson = (json: string): AccountsLockedData => {
     try {
-        return JSON.parse(json) as AccountsInfo;
+        return JSON.parse(json) as AccountsLockedData;
     } catch {
         return {
             accounts: [],
@@ -34,13 +30,14 @@ const checkAccountsFile = (): boolean => {
     return true;
 }
 
-const appendFile = (data: AllInfo): AllInfo|undefined => {
+const appendFile = (data: AccountInfo): AccountInfo|undefined => {
     if (accountFile === undefined) {
         throw accountFileNotFound;
     }
     const existingData = getAccountsDataFromJson(readFileSync(accountFile, {encoding: 'utf8'}));
     if (typeof existingData === 'object') {
-        existingData.accounts = existingData.accounts.concat(data)
+        existingData.accounts = existingData.accounts.concat(data);
+        existingData.lastUpdated = new Date;
         writeFile(accountFile, JSON.stringify(existingData));
         return data;
     }
