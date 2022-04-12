@@ -1,10 +1,11 @@
 import {Statistic, Table} from "antd";
 import {badSigner} from "./common";
 import Highlighter from "react-highlight-words";
-import {useEffect, useMemo, useState} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState} from "react";
 import {ColumnsType} from "antd/lib/table/interface";
 import https from "https";
 import {AccountInfo, AccountsLockedData} from "../typings/accountsLockedData";
+import * as React from "react";
 
 const getAccountsInfo = (source: string): Promise<AccountsLockedData> => {
     return new Promise((resolve, reject) => {
@@ -42,10 +43,9 @@ interface AccountsTableState {
 }
 interface AccountsTableProps {
     filter: string,
-    onUpdated: (updatedAt: Date) => void,
-    onFiltered: (data: AccountsLockedData) => void,
+    onFiltered?: (isFiltered: boolean) => void,
 }
-const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
+const AccountsTable = ({filter, onFiltered}: AccountsTableProps, ref: React.ForwardedRef<{ getData: () => AccountsLockedData }>) => {
     const [accounts, setAccounts] = useState<AccountInfo[]>([]);
     const [lastUpdated, setLastUpdated] = useState<Date>();
     const [state, setState] = useState<AccountsTableState>({loading: true, count: 0});
@@ -58,17 +58,31 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
             })
             .catch(() => {
                 setState(p => ({...p, loading: false}))
-            })
+            });
     }, []);
 
-    useEffect(() => {
-        try {
-            if (undefined !== lastUpdated) {
-                onUpdated(lastUpdated);
-            }
-        } catch {}
-    }, [lastUpdated, onUpdated]);
-
+    const isAccountMatchedByFilter = (search: string|number|boolean, record: AccountInfo) => {
+        return record.id.toLowerCase().includes(typeof search === 'string'?search.toLowerCase():`${search}`);
+    }
+    const getFilteredAccounts = useCallback(() => {
+        return accounts.filter(account => isAccountMatchedByFilter(filter??'', account))
+    }, [accounts, filter]);
+    const getAddressFilteredValue = useCallback(() => {
+        return filter?[filter]:[];
+    }, [filter]);
+    const getAddressFilters = useCallback(() => {
+        return (filter?[filter]:[]).map(filter => ({value: filter, text: filter}));
+    }, [filter]);
+    useImperativeHandle(ref,
+        () => ({
+            getData: () => {
+                return {
+                    accounts: getFilteredAccounts(),
+                    lastUpdated: lastUpdated!
+                }
+            }}),
+        [getFilteredAccounts, lastUpdated]
+    );
     const sizes = useMemo(() => {
         const selectors = [25, 50, 100, 200, 500, 1000];
         if (accounts?.length??0 > 25) {
@@ -86,10 +100,10 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
             }));
         }
     }, [accounts.length]);
-
-    const onAccountsFilter = (search: string|number|boolean, record: AccountInfo) => {
-        return record.id.toLowerCase().includes(typeof search === 'string'?search.toLowerCase():`${search}`);
-    }
+    useEffect(() => {
+        setState(p => ({...p, count: getFilteredAccounts().length}));
+        onFiltered?.(accounts.length !== getFilteredAccounts().length);
+    }, [getFilteredAccounts, accounts.length, onFiltered]);
 
     const columns = useMemo<ColumnsType<AccountInfo>>(() => [
         {
@@ -97,8 +111,13 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
             dataIndex: 'id',
             render: (id) => <Account id={id} search={filter} />,
             sorter: (a, b) => a.id.localeCompare(b.id),
-            onFilter: onAccountsFilter,
-            filteredValue: filter ? [filter] : [],
+            onFilter: isAccountMatchedByFilter,
+            filterIcon: <></>,
+            filteredValue: getAddressFilteredValue(),
+            filters: getAddressFilters(),
+            filterMode: 'menu',
+            filterMultiple: false,
+            filterDropdownVisible: false,
         },
         {
             title: 'locked at',
@@ -110,7 +129,7 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
             dataIndex: 'last_modified_time',
             sorter: (a: AccountInfo, b: AccountInfo) => Date.parse(a.last_modified_time) - Date.parse(b.last_modified_time),
         }
-    ], [filter]);
+    ], [filter, getAddressFilteredValue, getAddressFilters]);
 
     const tableFooter = () => {
         return <Statistic
@@ -118,7 +137,8 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
             value={state.count}
             loading={state.loading} />
     }
-    return <Table
+
+    return <Table<AccountInfo>
         sticky
         scroll={{ x: 'max-content' }}
         pagination={{
@@ -141,4 +161,4 @@ const AccountsTable = ({filter, onUpdated, onFiltered}: AccountsTableProps) => {
     />
 };
 
-export default AccountsTable;
+export default forwardRef(AccountsTable);
