@@ -13,7 +13,7 @@
     "react-dom": "^18.0.0",
     "react-download-link": "^2.3.0",
     "react-highlight-words": "^0.20.0",
-    "react-scripts": "5.0.0",
+    "react-scripts": "5.0.1",
     "stellar-sdk": "^10.0.1"
   },
   "scripts": {
