@@ -4,7 +4,7 @@
   "homepage": "https://hanseartic.github.io/bad-signer/",
   "private": true,
   "dependencies": {
-    "@ant-design/icons": "^4.7.0",
+    "@ant-design/icons": "^5.0.0",
     "@cosmic-plus/loopcall": "^1.6.0",
     "antd": "^4.19.5",
     "gh-pages": "^5.0.0",
