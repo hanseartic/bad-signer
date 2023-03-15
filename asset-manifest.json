@@ -1,11 +1,11 @@
 {
   "files": {
-    "main.css": "/bad-signer/static/css/main.3c6c0436.css",
+    "main.css": "/bad-signer/static/css/main.7cc9d9fa.css",
     "main.js": "/bad-signer/static/js/main.53f619e8.js",
     "index.html": "/bad-signer/index.html"
   },
   "entrypoints": [
-    "static/css/main.3c6c0436.css",
+    "static/css/main.7cc9d9fa.css",
     "static/js/main.53f619e8.js"
   ]
 }
